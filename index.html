@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Felices 2 Meses Amor 🌿⚡</title>
+    <link rel="stylesheet" href="estilos.css">
+</head>
+<body>
+
+    <!-- 1. PANTALLA DE INICIO INTERACTIVA -->
+    <div id="welcome-screen" class="welcome-container">
+        <div class="welcome-card">
+            <h1>Con mucho amor para mi Valett 💚</h1>
+            <p class="subtitle-welcome">De tu Lauti Pérez</p>
+            
+            <p class="click-instructions">Toca el corazón para llenar la barra de amor y entrar ☘️</p>
+            
+            <div id="heart-btn" class="interactive-heart">💚</div>
+            
+            <div class="progress-container">
+                <div id="progress-bar" class="progress-bar"></div>
+            </div>
+            <p id="counter-text" class="counter-text">0 / 10 clics</p>
+
+            <button id="enter-btn" class="enter-btn hidden-btn" disabled>¡Entrar a nuestro regalo! ✨</button>
+        </div>
+    </div>
+
+    <!-- 2. CONTENIDO PRINCIPAL -->
+    <div id="main-content" class="hidden">
+
+        <div class="container">
+            <!-- Header con Mini Logos -->
+            <header class="card title-card">
+                <div class="character-header">
+                    <img src="Flash-Logo.png" class="mini-logo" alt="Logo Flash">
+                    <h1>💚 Felices 2 meses amor de mi vida 💚</h1>
+                    <img src="ambosstitch.webp" class="mini-logo-round" alt="Stitch">
+                </div>
+                <p>Gracias por hacerme el más feliz del mundo cada día ✨</p>
+            </header>
+
+            <!-- Menú de 5 Botones con Imágenes de Stitch -->
+            <nav class="nav-menu">
+                <button class="nav-btn active" data-tab="tab-tiempo">
+                    <img src="tiempo.png.JPG" alt="Tiempo" class="nav-btn-img">
+                    <span>Tiempo</span>
+                </button>
+                <button class="nav-btn" data-tab="tab-musica">
+                    <img src="musica.png.JPG" alt="Música" class="nav-btn-img">
+                    <span>Música</span>
+                </button>
+                <button class="nav-btn" data-tab="tab-mapa">
+                    <img src="mapa.png.JPG" alt="Mapa" class="nav-btn-img">
+                    <span>Mapa</span>
+                </button>
+                <button class="nav-btn" data-tab="tab-fotos">
+                    <img src="fotos.png.JPG" alt="Fotos" class="nav-btn-img">
+                    <span>Álbum</span>
+                </button>
+                <button class="nav-btn" data-tab="tab-carta">
+                    <img src="carta.png.JPG" alt="Carta" class="nav-btn-img">
+                    <span>Carta</span>
+                </button>
+            </nav>
+
+            <!-- Pestaña 1: Nuestro Tiempo -->
+            <div id="tab-tiempo" class="tab-content active-tab">
+                <section class="card counter-card">
+                    <h2>🌿 Llevamos juntos: 🌿</h2>
+                    <div id="days-counter" class="timer">Cargando días...</div>
+                    <p class="subtitle">Desde el 15 de agosto de 2026 🗓️</p>
+                    
+                    <div class="flash-box">
+                        <div class="flash-img-container">
+                            <img src="Flash_(Barry_Allen).png" alt="Flash" class="character-img">
+                        </div>
+                        <p><i>"Dicen que Flash es el más rápido, pero ni él podría alcanzar lo rápido que crece mi amor por vos."</i></p>
+                    </div>
+                </section>
+
+                <section class="card stitch-card">
+                    <div class="stitch-header">
+                        <img src="stitchtierno.jpg" alt="Stitch" class="character-img-stitch">
+                        <div>
+                            <h2>Ohana significa familia 🌺</h2>
+                            <p><i>"Familia significa estar juntos, cuidarnos y elegirnos siempre. Sos mi persona favorita y te amo para toda la vida."</i> 💙✨</p>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- Pestaña 2: Nuestra Música -->
+            <div id="tab-musica" class="tab-content hidden-tab">
+                <section class="card music-card">
+                    <h2>🎵 Nuestra Música 🎶</h2>
+                    <p class="subtitle">Canciones que me hacen acordar a vos:</p>
+                    
+                    <div class="song-list">
+                        <div class="song-item">
+                            <div class="song-info">
+                                <h3>Copia Prohibida</h3>
+                                <p>Desakatados 🎷✨</p>
+                            </div>
+                            <a href="https://www.youtube.com/results?search_query=Copia+Prohibida+Desakatados" target="_blank" class="song-btn">Escuchar 🎧</a>
+                        </div>
+
+                        <div class="song-item">
+                            <div class="song-info">
+                                <h3>Dime Tú</h3>
+                                <p>Q' Lokura 🔥🎶</p>
+                            </div>
+                            <a href="https://www.youtube.com/results?search_query=Dime+Tu+Q+Lokura" target="_blank" class="song-btn">Escuchar 🎧</a>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- Pestaña 3: Mapa de Lugares Especiales -->
+            <div id="tab-mapa" class="tab-content hidden-tab">
+                <section class="card map-card">
+                    <h2>📍 Mapa de Nuestra Historia 🗺️</h2>
+                    <p class="subtitle">Los lugares donde construimos nuestros momentos mágicos:</p>
+                    
+                    <div class="places-list">
+                        <!-- Bariloche -->
+                        <div class="place-item">
+                            <div class="place-header">
+                                <span class="place-icon">🏔️</span>
+                                <div>
+                                    <h3>Bariloche</h3>
+                                    <span class="badge">Donde empezó todo ✨</span>
+                                </div>
+                            </div>
+                            <p>Donde cruzamos miradas y empezó esta historia hermosa.</p>
+                            <a href="https://www.google.com/maps/search/San+Carlos+de+Bariloche" target="_blank" class="map-btn">Ver en Google Maps 🗺️</a>
+                        </div>
+
+                        <!-- Costanera Carlos Paz -->
+                        <div class="place-item">
+                            <div class="place-header">
+                                <span class="place-icon">🌊</span>
+                                <div>
+                                    <h3>Costanera de Carlos Paz</h3>
+                                    <span class="badge">La primera cita ❤️</span>
+                                </div>
+                            </div>
+                            <p>Ese paseo inolvidable caminando al lado del agua juntos.</p>
+                            <a href="https://www.google.com/maps/search/Costanera+Villa+Carlos+Paz" target="_blank" class="map-btn">Ver en Google Maps 🗺️</a>
+                        </div>
+
+                        <!-- Villa Dolores -->
+                        <div class="place-item">
+                            <div class="place-header">
+                                <span class="place-icon">💍</span>
+                                <div>
+                                    <h3>Villa Dolores</h3>
+                                    <span class="badge">La propuesta ☘️</span>
+                                </div>
+                            </div>
+                            <p>El momento especial donde decidimos dar este paso juntos.</p>
+                            <a href="https://www.google.com/maps/search/Villa+Dolores+Cordoba" target="_blank" class="map-btn">Ver en Google Maps 🗺️</a>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- Pestaña 4: Álbum de Fotos -->
+            <div id="tab-fotos" class="tab-content hidden-tab">
+                <section class="card album-card">
+                    <h2>📸 Nuestro Álbum de Momentos</h2>
+                    <div class="photo-grid">
+                        <div class="photo-item">
+                            <img src="IMG_9548.jpg" alt="Foto 1">
+                            <p>Nuestra "primera" foto juntos</p>
+                        </div>
+                        <div class="photo-item">
+                            <img src="c3e71d53-bd9d-46bb-adbf-6346da555f07.jpg" alt="Foto 2">
+                            <p>Nuestra foto favorita</p>
+                        </div>
+                        <div class="photo-item">
+                            <img src="https://via.placeholder.com/300/a3b18a/ffffff?text=Nuestra+Foto+3" alt="Foto 3">
+                            <p>Nuestra última foto</p>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- Pestaña 5: Carta Interactiva -->
+            <div id="tab-carta" class="tab-content hidden-tab">
+                <section class="card letter-section">
+                    <h2>💌 Una carta especial para mi Valett ☘️</h2>
+                    <p>Haz clic en el sobre para abrir la carta:</p>
+                    
+                    <div class="envelope" id="envelope">
+                        <div class="envelope-front">✉️ Toca acá para abrir</div>
+                        <div class="letter-content hidden" id="letter-content">
+                            <h3>Para el amor de mi vida ❤️✨</h3>
+                            <p>
+                                Hola mi amor,
+                                <br><br>
+                                ¡Felices 2 meses! Quería prepararte este pequeño detalle hecho por mí para recordarte lo mucho que significas para mí...
+                                <br><br>
+                                (Aquí puedes editar con tu mensaje personalizado)
+                                <br><br>
+                                ¡Te amo infinito! 💚💙⚡
+                            </p>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
