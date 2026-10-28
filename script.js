@@ -32,14 +32,15 @@ if (enterBtn) {
         welcomeScreen.classList.add('hidden');
         mainContent.classList.remove('hidden');
         calcularDias();
-        cargarYSincronizarMascota();
+        renderizarMascota();
         renderizarRecuerdos();
     });
 }
 
-// Cargar estado guardado inmediatamente al abrir la página en segundo plano
+// Cargar y procesar estado antes de cualquier interacción del usuario
 document.addEventListener('DOMContentLoaded', () => {
-    cargarYSincronizarMascota();
+    sincronizarDesgasteMascota();
+    renderizarMascota();
 });
 
 // --- NAVEGACIÓN POR PESTAÑAS ---
@@ -92,59 +93,63 @@ if (envelope && letterContent) {
     });
 }
 
-// --- SISTEMA PERSISTENTE REAL DE LA MASCOTA VIRTUAL ---
-let petState = {
-    food: 50,
-    love: 50,
-    clean: 50,
-    lastCareTime: Date.now()
-};
+// --- SISTEMA PERSISTENTE DE MASCOTA VIRTUAL ---
+const STORAGE_KEY = 'stitch_pet_v4';
 
-function cargarYSincronizarMascota() {
-    const saved = localStorage.getItem('stitch_pet_v3');
-    const now = Date.now();
-
-    if (saved) {
-        petState = JSON.parse(saved);
-        
-        // Calcular horas exactas transcurridas fuera de la página
-        const hoursPassed = (now - petState.lastCareTime) / (1000 * 60 * 60);
-
-        if (hoursPassed > 0.1) {
-            const loss = Math.floor(hoursPassed * 5); // Desgaste del 5% por hora
-            if (loss > 0) {
-                petState.food = Math.max(0, petState.food - loss);
-                petState.love = Math.max(0, petState.love - loss);
-                petState.clean = Math.max(0, petState.clean - loss);
-                petState.lastCareTime = now; // Actualizar marca de tiempo tras aplicar desgaste
-            }
+function obtenerEstadoGuardado() {
+    const data = localStorage.getItem(STORAGE_KEY);
+    if (data) {
+        try {
+            return JSON.parse(data);
+        } catch (e) {
+            console.error('Error al leer localStorage', e);
         }
-    } else {
-        // Primera vez que entra
-        petState = {
-            food: 50,
-            love: 50,
-            clean: 50,
-            lastCareTime: now
-        };
     }
-
-    actualizarVistaMascota();
+    // Estado inicial en estado Normal (50%)
+    return {
+        food: 50,
+        love: 50,
+        clean: 50,
+        lastCareTime: Date.now()
+    };
 }
 
-function actualizarVistaMascota() {
-    const avatarImg = document.getElementById('pet-avatar-img');
-    const msg = document.getElementById('pet-status-msg');
+function guardarEstado(estado) {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(estado));
+}
 
+function sincronizarDesgasteMascota() {
+    let estado = obtenerEstadoGuardado();
+    const ahora = Date.now();
+    const horasTranscurridas = (ahora - estado.lastCareTime) / (1000 * 60 * 60);
+
+    // Si pasaron más de 10 minutos (0.16 horas), aplicamos desgaste proporcional (5% por hora)
+    if (horasTranscurridas >= 0.16) {
+        const desgaste = Math.floor(horasTranscurridas * 5);
+        if (desgaste > 0) {
+            estado.food = Math.max(0, estado.food - desgaste);
+            estado.love = Math.max(0, estado.love - desgaste);
+            estado.clean = Math.max(0, estado.clean - desgaste);
+            estado.lastCareTime = ahora;
+            guardarEstado(estado);
+        }
+    }
+}
+
+function renderizarMascota() {
+    const estado = obtenerEstadoGuardado();
+    
     const foodBar = document.getElementById('food-bar');
     const loveBar = document.getElementById('love-bar');
     const cleanBar = document.getElementById('clean-bar');
 
-    if (foodBar) foodBar.style.width = petState.food + '%';
-    if (loveBar) loveBar.style.width = petState.love + '%';
-    if (cleanBar) cleanBar.style.width = petState.clean + '%';
+    if (foodBar) foodBar.style.width = estado.food + '%';
+    if (loveBar) loveBar.style.width = estado.love + '%';
+    if (cleanBar) cleanBar.style.width = estado.clean + '%';
 
-    const promedio = (petState.food + petState.love + petState.clean) / 3;
+    const promedio = (estado.food + estado.love + estado.clean) / 3;
+    const avatarImg = document.getElementById('pet-avatar-img');
+    const msg = document.getElementById('pet-status-msg');
 
     if (promedio >= 65) {
         if (avatarImg) avatarImg.src = "stitch-feliz.jpg";
@@ -156,19 +161,18 @@ function actualizarVistaMascota() {
         if (avatarImg) avatarImg.src = "stitch-triste.jpg";
         if (msg) msg.innerText = "¡Stitch está muy triste y débil! Cuidalo antes de que baje más... 😢";
     }
-
-    // Guardado permanente e inmediato en la memoria del navegador
-    localStorage.setItem('stitch_pet_v3', JSON.stringify(petState));
 }
 
 function darCuidado(tipo) {
-    petState.lastCareTime = Date.now();
+    let estado = obtenerEstadoGuardado();
+    estado.lastCareTime = Date.now();
 
-    if (tipo === 'food') petState.food = Math.min(100, petState.food + 20);
-    if (tipo === 'love') petState.love = Math.min(100, petState.love + 20);
-    if (tipo === 'clean') petState.clean = Math.min(100, petState.clean + 20);
+    if (tipo === 'food') estado.food = Math.min(100, estado.food + 20);
+    if (tipo === 'love') estado.love = Math.min(100, estado.love + 20);
+    if (tipo === 'clean') estado.clean = Math.min(100, estado.clean + 20);
 
-    actualizarVistaMascota();
+    guardarEstado(estado);
+    renderizarMascota();
 }
 
 const feedBtn = document.getElementById('feed-btn');
@@ -179,12 +183,13 @@ if (feedBtn) feedBtn.addEventListener('click', () => darCuidado('food'));
 if (playBtn) playBtn.addEventListener('click', () => darCuidado('love'));
 if (cleanBtn) cleanBtn.addEventListener('click', () => darCuidado('clean'));
 
-// Comprobación continua mientras la web esté abierta
+// Comprobación periódica mientras la página permanezca abierta
 setInterval(() => {
-    cargarYSincronizarMascota();
+    sincronizarDesgasteMascota();
+    renderizarMascota();
 }, 60000);
 
-// --- SECCIÓN NUESTROS RECUERDOS (LOCALSTORAGE) ---
+// --- SECCIÓN NUESTROS RECUERDOS ---
 const memoryForm = document.getElementById('memory-form');
 const memoriesGrid = document.getElementById('memories-grid');
 
