@@ -37,6 +37,11 @@ if (enterBtn) {
     });
 }
 
+// Cargar estado guardado inmediatamente al abrir la página en segundo plano
+document.addEventListener('DOMContentLoaded', () => {
+    cargarYSincronizarMascota();
+});
+
 // --- NAVEGACIÓN POR PESTAÑAS ---
 const navButtons = document.querySelectorAll('.nav-btn');
 const tabContents = document.querySelectorAll('.tab-content');
@@ -87,7 +92,7 @@ if (envelope && letterContent) {
     });
 }
 
-// --- SISTEMA PERSISTENTE DE LA MASCOTA VIRTUAL ---
+// --- SISTEMA PERSISTENTE REAL DE LA MASCOTA VIRTUAL ---
 let petState = {
     food: 50,
     love: 50,
@@ -97,24 +102,33 @@ let petState = {
 
 function cargarYSincronizarMascota() {
     const saved = localStorage.getItem('stitch_pet_v3');
+    const now = Date.now();
+
     if (saved) {
         petState = JSON.parse(saved);
         
-        // Calcular tiempo transcurrido desde la última entrada o interacción
-        const now = Date.now();
+        // Calcular horas exactas transcurridas fuera de la página
         const hoursPassed = (now - petState.lastCareTime) / (1000 * 60 * 60);
 
-        if (hoursPassed > 0) {
-            const loss = Math.floor(hoursPassed * 5); // Resta 5% de cada barra por cada hora
-            petState.food = Math.max(0, petState.food - loss);
-            petState.love = Math.max(0, petState.love - loss);
-            petState.clean = Math.max(0, petState.clean - loss);
-            petState.lastCareTime = now; // Sincroniza la hora tras aplicar la reducción
+        if (hoursPassed > 0.1) {
+            const loss = Math.floor(hoursPassed * 5); // Desgaste del 5% por hora
+            if (loss > 0) {
+                petState.food = Math.max(0, petState.food - loss);
+                petState.love = Math.max(0, petState.love - loss);
+                petState.clean = Math.max(0, petState.clean - loss);
+                petState.lastCareTime = now; // Actualizar marca de tiempo tras aplicar desgaste
+            }
         }
     } else {
-        // Primera inicialización si nunca se guardó
-        petState.lastCareTime = Date.now();
+        // Primera vez que entra
+        petState = {
+            food: 50,
+            love: 50,
+            clean: 50,
+            lastCareTime: now
+        };
     }
+
     actualizarVistaMascota();
 }
 
@@ -143,7 +157,7 @@ function actualizarVistaMascota() {
         if (msg) msg.innerText = "¡Stitch está muy triste y débil! Cuidalo antes de que baje más... 😢";
     }
 
-    // Persistencia continua en almacenamiento local
+    // Guardado permanente e inmediato en la memoria del navegador
     localStorage.setItem('stitch_pet_v3', JSON.stringify(petState));
 }
 
@@ -165,11 +179,9 @@ if (feedBtn) feedBtn.addEventListener('click', () => darCuidado('food'));
 if (playBtn) playBtn.addEventListener('click', () => darCuidado('love'));
 if (cleanBtn) cleanBtn.addEventListener('click', () => darCuidado('clean'));
 
-// Comprobación continua cada minuto para desgastar si la pestaña queda abierta
+// Comprobación continua mientras la web esté abierta
 setInterval(() => {
-    if (mainContent && !mainContent.classList.contains('hidden')) {
-        cargarYSincronizarMascota();
-    }
+    cargarYSincronizarMascota();
 }, 60000);
 
 // --- SECCIÓN NUESTROS RECUERDOS (LOCALSTORAGE) ---
