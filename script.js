@@ -142,6 +142,8 @@ function iniciarSincronizacionNube() {
             petDocRef.set(estadoInicial);
             renderizarMascota(estadoInicial);
         }
+    }, err => {
+        console.error("Error al sincronizar con Firestore:", err);
     });
 }
 
@@ -183,7 +185,7 @@ function darCuidado(tipo) {
         if (tipo === 'clean') estado.clean = Math.min(100, estado.clean + 20);
 
         petDocRef.set(estado);
-    });
+    }).catch(err => console.error("Error al guardar cuidado:", err));
 }
 
 const feedBtn = document.getElementById('feed-btn');
@@ -199,4 +201,60 @@ const memoryForm = document.getElementById('memory-form');
 const memoriesGrid = document.getElementById('memories-grid');
 
 if (memoryForm) {
-    memoryForm.addEventListener('submit', (e) =>
+    memoryForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+
+        const fileInput = document.getElementById('memory-image');
+        const titleInput = document.getElementById('memory-title').value;
+        const descInput = document.getElementById('memory-desc').value;
+
+        if (fileInput && fileInput.files && fileInput.files[0]) {
+            const reader = new FileReader();
+
+            reader.onload = function (event) {
+                const newMemory = {
+                    image: event.target.result,
+                    title: titleInput,
+                    desc: descInput,
+                    date: new Date().toLocaleDateString('es-AR')
+                };
+
+                guardarRecuerdo(newMemory);
+                memoryForm.reset();
+                renderizarRecuerdos();
+            };
+
+            reader.readAsDataURL(fileInput.files[0]);
+        }
+    });
+}
+
+function guardarRecuerdo(recuerdo) {
+    const recuerdos = JSON.parse(localStorage.getItem('nuestros_recuerdos') || '[]');
+    recuerdos.unshift(recuerdo);
+    localStorage.setItem('nuestros_recuerdos', JSON.stringify(recuerdos));
+}
+
+function renderizarRecuerdos() {
+    if (!memoriesGrid) return;
+
+    const recuerdos = JSON.parse(localStorage.getItem('nuestros_recuerdos') || '[]');
+    memoriesGrid.innerHTML = '';
+
+    if (recuerdos.length === 0) {
+        memoriesGrid.innerHTML = '<p class="subtitle">Aún no hay recuerdos agregados. ¡Sé el primero en subir uno!</p>';
+        return;
+    }
+
+    recuerdos.forEach(recuerdo => {
+        const card = document.createElement('div');
+        card.className = 'photo-item';
+        card.innerHTML = `
+            <img src="${recuerdo.image}" alt="${recuerdo.title}">
+            <p><strong>${recuerdo.title}</strong></p>
+            <p>${recuerdo.desc}</p>
+            <small>Agregado el ${recuerdo.date}</small>
+        `;
+        memoriesGrid.appendChild(card);
+    });
+}
