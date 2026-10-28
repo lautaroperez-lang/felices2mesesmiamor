@@ -301,6 +301,23 @@ body {
 .photo-item p { margin-top: 6px; font-size: 0.85rem; color: #1b4332; font-weight: 500; }
 .photo-item small { font-size: 0.75rem; color: #52b788; display: block; margin-top: 2px; }
 
+/* BOTÓN ELIMINAR RECUERDO */
+.delete-memory-btn {
+    margin-top: 8px;
+    background: #e63946;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 0.75rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+.delete-memory-btn:active {
+    background: #b71c1c;
+}
+
 /* ESTILOS MASCOTA Y BARRAS DE ESTADO */
 .pet-display { margin: 15px 0; text-align: center; }
 

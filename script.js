@@ -9,19 +9,19 @@ const firebaseConfig = {
   measurementId: "G-4M89LYY6NX"
 };
 
-// Inicializar Firebase (compatibilidad Web CDN)
+// Inicializar Firebase
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 const petDocRef = db.collection('mascota').doc('stitch');
 
-// Preguntar quién es el cuidador activo para dejar registro
+// Identificación del usuario
 let usuarioActual = localStorage.getItem('nombre_cuidador');
 if (!usuarioActual) {
-    usuarioActual = prompt("¿Quién cuidará a Stitch hoy? (Escribe: Lauti o Valett)") || "Alguien especial";
+    usuarioActual = prompt("¿Quién ingresa a la pagina hoy? (Escribe: Lauti o Valet)") || "Alguien especial";
     localStorage.setItem('nombre_cuidador', usuarioActual);
 }
 
-// --- LÓGICA DE PANTALLA DE INICIO INTERACTIVA ---
+// --- PANTALLA DE INICIO ---
 let clickCount = 0;
 const totalClicks = 10;
 
@@ -60,7 +60,7 @@ if (enterBtn) {
     });
 }
 
-// --- NAVEGACIÓN POR PESTAÑAS (7 SECCIONES) ---
+// --- NAVEGACIÓN ---
 const navButtons = document.querySelectorAll('.nav-btn');
 const tabContents = document.querySelectorAll('.tab-content');
 
@@ -82,7 +82,7 @@ navButtons.forEach(button => {
     });
 });
 
-// --- CÁLCULO DE DÍAS JUNTOS ---
+// --- CÁLCULO DE DÍAS ---
 function calcularDias() {
     const fechaInicio = new Date(2026, 7, 15); 
     const fechaActual = new Date();
@@ -110,7 +110,7 @@ if (envelope && letterContent) {
     });
 }
 
-// --- SISTEMA EN TIEMPO REAL CON FIREBASE FIRESTORE ---
+// --- MASCOTA EN LA NUBE ---
 function iniciarSincronizacionNube() {
     petDocRef.onSnapshot(doc => {
         if (doc.exists) {
@@ -118,7 +118,6 @@ function iniciarSincronizacionNube() {
             const ahora = Date.now();
             const horasPasadas = (ahora - data.lastCareTime) / (1000 * 60 * 60);
 
-            // Desgaste dinámico del 5% por hora sin entradas/cuidados
             if (horasPasadas >= 0.1) {
                 const desgaste = Math.floor(horasPasadas * 5);
                 if (desgaste > 0) {
@@ -131,7 +130,6 @@ function iniciarSincronizacionNube() {
             }
             renderizarMascota(data);
         } else {
-            // Inicializar a Stitch en la nube en Estado Normal (50%)
             const estadoInicial = {
                 food: 50,
                 love: 50,
@@ -143,7 +141,7 @@ function iniciarSincronizacionNube() {
             renderizarMascota(estadoInicial);
         }
     }, err => {
-        console.error("Error al sincronizar con Firestore:", err);
+        console.error("Error en Firestore:", err);
     });
 }
 
@@ -163,14 +161,14 @@ function renderizarMascota(estado) {
     let textoCuidador = estado.ultimoCuidador ? ` (Último mimo de ${estado.ultimoCuidador})` : '';
 
     if (promedio >= 65) {
-        if (avatarImg) avatarImg.src = "stitch-feliz.jpg";
-        if (msg) msg.innerText = `¡Stitch está súper feliz y lleno de energía contigo! 🥰💙${textoCuidador}`;
+        if (avatarImg) avatarImg.src = "images (5).jpg";
+        if (msg) msg.innerText = `Stitch está súper feliz y lleno de energía 🥰💙${textoCuidador}`;
     } else if (promedio >= 35) {
-        if (avatarImg) avatarImg.src = "stitch-normal.jpg";
+        if (avatarImg) avatarImg.src = "stitchnormal.jpg";
         if (msg) msg.innerText = `Stitch está tranquilo, pero necesita más mimos y comida... 🍗${textoCuidador}`;
     } else {
-        if (avatarImg) avatarImg.src = "stitch-triste.jpg";
-        if (msg) msg.innerText = `¡Stitch está muy triste y débil! Cuidalo antes de que baje más... 😢${textoCuidador}`;
+        if (avatarImg) avatarImg.src = "stitchtriste.jpg";
+        if (msg) msg.innerText = `¡Stitch está muy triste y débil! Cuidalo antes de que baje más... ${textoCuidador}`;
     }
 }
 
@@ -185,7 +183,7 @@ function darCuidado(tipo) {
         if (tipo === 'clean') estado.clean = Math.min(100, estado.clean + 20);
 
         petDocRef.set(estado);
-    }).catch(err => console.error("Error al guardar cuidado:", err));
+    });
 }
 
 const feedBtn = document.getElementById('feed-btn');
@@ -196,7 +194,7 @@ if (feedBtn) feedBtn.addEventListener('click', () => darCuidado('food'));
 if (playBtn) playBtn.addEventListener('click', () => darCuidado('love'));
 if (cleanBtn) cleanBtn.addEventListener('click', () => darCuidado('clean'));
 
-// --- SECCIÓN NUESTROS RECUERDOS ---
+// --- SECCIÓN NUESTROS RECUERDOS (CON GUARDADO Y ELIMINACIÓN) ---
 const memoryForm = document.getElementById('memory-form');
 const memoriesGrid = document.getElementById('memories-grid');
 
@@ -235,6 +233,13 @@ function guardarRecuerdo(recuerdo) {
     localStorage.setItem('nuestros_recuerdos', JSON.stringify(recuerdos));
 }
 
+function eliminarRecuerdo(index) {
+    let recuerdos = JSON.parse(localStorage.getItem('nuestros_recuerdos') || '[]');
+    recuerdos.splice(index, 1);
+    localStorage.setItem('nuestros_recuerdos', JSON.stringify(recuerdos));
+    renderizarRecuerdos();
+}
+
 function renderizarRecuerdos() {
     if (!memoriesGrid) return;
 
@@ -246,14 +251,15 @@ function renderizarRecuerdos() {
         return;
     }
 
-    recuerdos.forEach(recuerdo => {
+    recuerdos.forEach((recuerdo, index) => {
         const card = document.createElement('div');
-        card.className = 'photo-item';
+        card.className = 'photo-item memory-card-item';
         card.innerHTML = `
             <img src="${recuerdo.image}" alt="${recuerdo.title}">
             <p><strong>${recuerdo.title}</strong></p>
             <p>${recuerdo.desc}</p>
             <small>Agregado el ${recuerdo.date}</small>
+            <button class="delete-memory-btn" onclick="eliminarRecuerdo(${index})"> Eliminar</button>
         `;
         memoriesGrid.appendChild(card);
     });
