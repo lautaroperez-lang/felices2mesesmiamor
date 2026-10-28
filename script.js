@@ -194,7 +194,7 @@ if (feedBtn) feedBtn.addEventListener('click', () => darCuidado('food'));
 if (playBtn) playBtn.addEventListener('click', () => darCuidado('love'));
 if (cleanBtn) cleanBtn.addEventListener('click', () => darCuidado('clean'));
 
-// --- SECCIÓN NUESTROS RECUERDOS (CON GUARDADO Y ELIMINACIÓN) ---
+// --- SECCIÓN NUESTROS RECUERDOS (CON COMPRESIÓN Y ELIMINACIÓN) ---
 const memoryForm = document.getElementById('memory-form');
 const memoriesGrid = document.getElementById('memories-grid');
 
@@ -207,30 +207,60 @@ if (memoryForm) {
         const descInput = document.getElementById('memory-desc').value;
 
         if (fileInput && fileInput.files && fileInput.files[0]) {
+            const file = fileInput.files[0];
             const reader = new FileReader();
 
             reader.onload = function (event) {
-                const newMemory = {
-                    image: event.target.result,
-                    title: titleInput,
-                    desc: descInput,
-                    date: new Date().toLocaleDateString('es-AR')
-                };
+                const img = new Image();
+                img.src = event.target.result;
 
-                guardarRecuerdo(newMemory);
-                memoryForm.reset();
-                renderizarRecuerdos();
+                img.onload = function () {
+                    // Redimensionar para evitar superar los 5MB de localStorage
+                    const canvas = document.createElement('canvas');
+                    const MAX_WIDTH = 600;
+                    const scaleFactor = MAX_WIDTH / img.width;
+
+                    if (img.width > MAX_WIDTH) {
+                        canvas.width = MAX_WIDTH;
+                        canvas.height = img.height * scaleFactor;
+                    } else {
+                        canvas.width = img.width;
+                        canvas.height = img.height;
+                    }
+
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+                    // Convertir a JPEG comprimido
+                    const compressedBase64 = canvas.toDataURL('image/jpeg', 0.7);
+
+                    const newMemory = {
+                        image: compressedBase64,
+                        title: titleInput,
+                        desc: descInput,
+                        date: new Date().toLocaleDateString('es-AR')
+                    };
+
+                    guardarRecuerdo(newMemory);
+                    memoryForm.reset();
+                    renderizarRecuerdos();
+                };
             };
 
-            reader.readAsDataURL(fileInput.files[0]);
+            reader.readAsDataURL(file);
         }
     });
 }
 
 function guardarRecuerdo(recuerdo) {
-    const recuerdos = JSON.parse(localStorage.getItem('nuestros_recuerdos') || '[]');
-    recuerdos.unshift(recuerdo);
-    localStorage.setItem('nuestros_recuerdos', JSON.stringify(recuerdos));
+    try {
+        const recuerdos = JSON.parse(localStorage.getItem('nuestros_recuerdos') || '[]');
+        recuerdos.unshift(recuerdo);
+        localStorage.setItem('nuestros_recuerdos', JSON.stringify(recuerdos));
+    } catch (error) {
+        alert("La memoria del navegador está llena. Borra algún recuerdo anterior antes de subir uno nuevo.");
+        console.error("Error en localStorage:", error);
+    }
 }
 
 function eliminarRecuerdo(index) {
@@ -259,7 +289,7 @@ function renderizarRecuerdos() {
             <p><strong>${recuerdo.title}</strong></p>
             <p>${recuerdo.desc}</p>
             <small>Agregado el ${recuerdo.date}</small>
-            <button class="delete-memory-btn" onclick="eliminarRecuerdo(${index})"> Eliminar</button>
+            <button class="delete-memory-btn" onclick="eliminarRecuerdo(${index})">🗑️ Eliminar</button>
         `;
         memoriesGrid.appendChild(card);
     });
