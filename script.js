@@ -1,4 +1,27 @@
-// --- LÓGICA DE LA PANTALLA DE INICIO (CORAZÓN INTERACTIVO) ---
+// --- CONFIGURACIÓN DE FIREBASE EN LA NUBE CON TUS LLAVES ---
+const firebaseConfig = {
+  apiKey: "AIzaSyDaXXx-Bvx1-Gn0f4w3NCeE8Y3d59Zybpo",
+  authDomain: "mascotastitch.firebaseapp.com",
+  projectId: "mascotastitch",
+  storageBucket: "mascotastitch.firebasestorage.app",
+  messagingSenderId: "786158126868",
+  appId: "1:786158126868:web:e7ea960a30d0803d312401",
+  measurementId: "G-4M89LYY6NX"
+};
+
+// Inicializar Firebase (compatibilidad Web CDN)
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+const petDocRef = db.collection('mascota').doc('stitch');
+
+// Preguntar quién es el cuidador activo para dejar registro
+let usuarioActual = localStorage.getItem('nombre_cuidador');
+if (!usuarioActual) {
+    usuarioActual = prompt("¿Quién cuidará a Stitch hoy? (Escribe: Lauti o Valett)") || "Alguien especial";
+    localStorage.setItem('nombre_cuidador', usuarioActual);
+}
+
+// --- LÓGICA DE PANTALLA DE INICIO INTERACTIVA ---
 let clickCount = 0;
 const totalClicks = 10;
 
@@ -32,18 +55,12 @@ if (enterBtn) {
         welcomeScreen.classList.add('hidden');
         mainContent.classList.remove('hidden');
         calcularDias();
-        renderizarMascota();
+        iniciarSincronizacionNube();
         renderizarRecuerdos();
     });
 }
 
-// Cargar y procesar estado antes de cualquier interacción del usuario
-document.addEventListener('DOMContentLoaded', () => {
-    sincronizarDesgasteMascota();
-    renderizarMascota();
-});
-
-// --- NAVEGACIÓN POR PESTAÑAS ---
+// --- NAVEGACIÓN POR PESTAÑAS (7 SECCIONES) ---
 const navButtons = document.querySelectorAll('.nav-btn');
 const tabContents = document.querySelectorAll('.tab-content');
 
@@ -93,52 +110,42 @@ if (envelope && letterContent) {
     });
 }
 
-// --- SISTEMA PERSISTENTE DE MASCOTA VIRTUAL ---
-const STORAGE_KEY = 'stitch_pet_v4';
+// --- SISTEMA EN TIEMPO REAL CON FIREBASE FIRESTORE ---
+function iniciarSincronizacionNube() {
+    petDocRef.onSnapshot(doc => {
+        if (doc.exists) {
+            let data = doc.data();
+            const ahora = Date.now();
+            const horasPasadas = (ahora - data.lastCareTime) / (1000 * 60 * 60);
 
-function obtenerEstadoGuardado() {
-    const data = localStorage.getItem(STORAGE_KEY);
-    if (data) {
-        try {
-            return JSON.parse(data);
-        } catch (e) {
-            console.error('Error al leer localStorage', e);
+            // Desgaste dinámico del 5% por hora sin entradas/cuidados
+            if (horasPasadas >= 0.1) {
+                const desgaste = Math.floor(horasPasadas * 5);
+                if (desgaste > 0) {
+                    data.food = Math.max(0, data.food - desgaste);
+                    data.love = Math.max(0, data.love - desgaste);
+                    data.clean = Math.max(0, data.clean - desgaste);
+                    data.lastCareTime = ahora;
+                    petDocRef.set(data);
+                }
+            }
+            renderizarMascota(data);
+        } else {
+            // Inicializar a Stitch en la nube en Estado Normal (50%)
+            const estadoInicial = {
+                food: 50,
+                love: 50,
+                clean: 50,
+                lastCareTime: Date.now(),
+                ultimoCuidador: "Ninguno"
+            };
+            petDocRef.set(estadoInicial);
+            renderizarMascota(estadoInicial);
         }
-    }
-    // Estado inicial en estado Normal (50%)
-    return {
-        food: 50,
-        love: 50,
-        clean: 50,
-        lastCareTime: Date.now()
-    };
+    });
 }
 
-function guardarEstado(estado) {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(estado));
-}
-
-function sincronizarDesgasteMascota() {
-    let estado = obtenerEstadoGuardado();
-    const ahora = Date.now();
-    const horasTranscurridas = (ahora - estado.lastCareTime) / (1000 * 60 * 60);
-
-    // Si pasaron más de 10 minutos (0.16 horas), aplicamos desgaste proporcional (5% por hora)
-    if (horasTranscurridas >= 0.16) {
-        const desgaste = Math.floor(horasTranscurridas * 5);
-        if (desgaste > 0) {
-            estado.food = Math.max(0, estado.food - desgaste);
-            estado.love = Math.max(0, estado.love - desgaste);
-            estado.clean = Math.max(0, estado.clean - desgaste);
-            estado.lastCareTime = ahora;
-            guardarEstado(estado);
-        }
-    }
-}
-
-function renderizarMascota() {
-    const estado = obtenerEstadoGuardado();
-    
+function renderizarMascota(estado) {
     const foodBar = document.getElementById('food-bar');
     const loveBar = document.getElementById('love-bar');
     const cleanBar = document.getElementById('clean-bar');
@@ -151,28 +158,32 @@ function renderizarMascota() {
     const avatarImg = document.getElementById('pet-avatar-img');
     const msg = document.getElementById('pet-status-msg');
 
+    let textoCuidador = estado.ultimoCuidador ? ` (Último mimo de ${estado.ultimoCuidador})` : '';
+
     if (promedio >= 65) {
         if (avatarImg) avatarImg.src = "stitch-feliz.jpg";
-        if (msg) msg.innerText = "¡Stitch está súper feliz y lleno de energía contigo! 🥰💙";
+        if (msg) msg.innerText = `¡Stitch está súper feliz y lleno de energía contigo! 🥰💙${textoCuidador}`;
     } else if (promedio >= 35) {
         if (avatarImg) avatarImg.src = "stitch-normal.jpg";
-        if (msg) msg.innerText = "Stitch está tranquilo, pero necesita más mimos y comida... 🍗";
+        if (msg) msg.innerText = `Stitch está tranquilo, pero necesita más mimos y comida... 🍗${textoCuidador}`;
     } else {
         if (avatarImg) avatarImg.src = "stitch-triste.jpg";
-        if (msg) msg.innerText = "¡Stitch está muy triste y débil! Cuidalo antes de que baje más... 😢";
+        if (msg) msg.innerText = `¡Stitch está muy triste y débil! Cuidalo antes de que baje más... 😢${textoCuidador}`;
     }
 }
 
 function darCuidado(tipo) {
-    let estado = obtenerEstadoGuardado();
-    estado.lastCareTime = Date.now();
+    petDocRef.get().then(doc => {
+        let estado = doc.exists ? doc.data() : { food: 50, love: 50, clean: 50 };
+        estado.lastCareTime = Date.now();
+        estado.ultimoCuidador = usuarioActual;
 
-    if (tipo === 'food') estado.food = Math.min(100, estado.food + 20);
-    if (tipo === 'love') estado.love = Math.min(100, estado.love + 20);
-    if (tipo === 'clean') estado.clean = Math.min(100, estado.clean + 20);
+        if (tipo === 'food') estado.food = Math.min(100, estado.food + 20);
+        if (tipo === 'love') estado.love = Math.min(100, estado.love + 20);
+        if (tipo === 'clean') estado.clean = Math.min(100, estado.clean + 20);
 
-    guardarEstado(estado);
-    renderizarMascota();
+        petDocRef.set(estado);
+    });
 }
 
 const feedBtn = document.getElementById('feed-btn');
@@ -183,71 +194,9 @@ if (feedBtn) feedBtn.addEventListener('click', () => darCuidado('food'));
 if (playBtn) playBtn.addEventListener('click', () => darCuidado('love'));
 if (cleanBtn) cleanBtn.addEventListener('click', () => darCuidado('clean'));
 
-// Comprobación periódica mientras la página permanezca abierta
-setInterval(() => {
-    sincronizarDesgasteMascota();
-    renderizarMascota();
-}, 60000);
-
 // --- SECCIÓN NUESTROS RECUERDOS ---
 const memoryForm = document.getElementById('memory-form');
 const memoriesGrid = document.getElementById('memories-grid');
 
 if (memoryForm) {
-    memoryForm.addEventListener('submit', (e) => {
-        e.preventDefault();
-
-        const fileInput = document.getElementById('memory-image');
-        const titleInput = document.getElementById('memory-title').value;
-        const descInput = document.getElementById('memory-desc').value;
-
-        if (fileInput && fileInput.files && fileInput.files[0]) {
-            const reader = new FileReader();
-
-            reader.onload = function (event) {
-                const newMemory = {
-                    image: event.target.result,
-                    title: titleInput,
-                    desc: descInput,
-                    date: new Date().toLocaleDateString('es-AR')
-                };
-
-                guardarRecuerdo(newMemory);
-                memoryForm.reset();
-                renderizarRecuerdos();
-            };
-
-            reader.readAsDataURL(fileInput.files[0]);
-        }
-    });
-}
-
-function guardarRecuerdo(recuerdo) {
-    const recuerdos = JSON.parse(localStorage.getItem('nuestros_recuerdos') || '[]');
-    recuerdos.unshift(recuerdo);
-    localStorage.setItem('nuestros_recuerdos', JSON.stringify(recuerdos));
-}
-
-function renderizarRecuerdos() {
-    if (!memoriesGrid) return;
-
-    const recuerdos = JSON.parse(localStorage.getItem('nuestros_recuerdos') || '[]');
-    memoriesGrid.innerHTML = '';
-
-    if (recuerdos.length === 0) {
-        memoriesGrid.innerHTML = '<p class="subtitle">Aún no hay recuerdos agregados. ¡Sé el primero en subir uno!</p>';
-        return;
-    }
-
-    recuerdos.forEach(recuerdo => {
-        const card = document.createElement('div');
-        card.className = 'photo-item';
-        card.innerHTML = `
-            <img src="${recuerdo.image}" alt="${recuerdo.title}">
-            <p><strong>${recuerdo.title}</strong></p>
-            <p>${recuerdo.desc}</p>
-            <small>Agregado el ${recuerdo.date}</small>
-        `;
-        memoriesGrid.appendChild(card);
-    });
-}
+    memoryForm.addEventListener('submit', (e) =>
