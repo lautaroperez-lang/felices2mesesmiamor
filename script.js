@@ -9,31 +9,35 @@ const enterBtn = document.getElementById('enter-btn');
 const welcomeScreen = document.getElementById('welcome-screen');
 const mainContent = document.getElementById('main-content');
 
-heartBtn.addEventListener('click', () => {
-    if (clickCount < totalClicks) {
-        clickCount++;
-        const percentage = (clickCount / totalClicks) * 100;
-        progressBar.style.width = percentage + '%';
-        counterText.innerText = `${clickCount} / ${totalClicks} clics`;
+if (heartBtn) {
+    heartBtn.addEventListener('click', () => {
+        if (clickCount < totalClicks) {
+            clickCount++;
+            const percentage = (clickCount / totalClicks) * 100;
+            progressBar.style.width = percentage + '%';
+            counterText.innerText = `${clickCount} / ${totalClicks} clics`;
 
-        if (clickCount === totalClicks) {
-            enterBtn.classList.remove('hidden-btn');
-            enterBtn.classList.add('visible-btn');
-            enterBtn.disabled = false;
-            counterText.innerText = "¡Amor completado al 100%! 💚";
+            if (clickCount === totalClicks) {
+                enterBtn.classList.remove('hidden-btn');
+                enterBtn.classList.add('visible-btn');
+                enterBtn.disabled = false;
+                counterText.innerText = "¡Amor completado al 100%! 💚";
+            }
         }
-    }
-});
+    });
+}
 
-enterBtn.addEventListener('click', () => {
-    welcomeScreen.classList.add('hidden');
-    mainContent.classList.remove('hidden');
-    calcularDias();
-    cargarYSincronizarMascota();
-    renderizarRecuerdos();
-});
+if (enterBtn) {
+    enterBtn.addEventListener('click', () => {
+        welcomeScreen.classList.add('hidden');
+        mainContent.classList.remove('hidden');
+        calcularDias();
+        cargarYSincronizarMascota();
+        renderizarRecuerdos();
+    });
+}
 
-// --- NAVEGACIÓN POR PESTAÑAS (7 BOTONES) ---
+// --- NAVEGACIÓN POR PESTAÑAS ---
 const navButtons = document.querySelectorAll('.nav-btn');
 const tabContents = document.querySelectorAll('.tab-content');
 
@@ -48,24 +52,28 @@ navButtons.forEach(button => {
         button.classList.add('active');
         const tabId = button.getAttribute('data-tab');
         const activeTab = document.getElementById(tabId);
-        activeTab.classList.remove('hidden-tab');
-        activeTab.classList.add('active-tab');
+        if (activeTab) {
+            activeTab.classList.remove('hidden-tab');
+            activeTab.classList.add('active-tab');
+        }
     });
 });
 
 // --- CÁLCULO DE DÍAS JUNTOS ---
 function calcularDias() {
-    // Agosto es el mes 7 (Enero = 0)
     const fechaInicio = new Date(2026, 7, 15); 
     const fechaActual = new Date();
 
     const diferenciaTiempo = fechaActual - fechaInicio;
     const diasJuntos = Math.floor(diferenciaTiempo / (1000 * 60 * 60 * 24));
 
-    if (diasJuntos >= 0) {
-        document.getElementById('days-counter').innerText = `${diasJuntos} Días ❤️`;
-    } else {
-        document.getElementById('days-counter').innerText = `¡Faltan pocos días para comenzar! 🌿`;
+    const counterElement = document.getElementById('days-counter');
+    if (counterElement) {
+        if (diasJuntos >= 0) {
+            counterElement.innerText = `${diasJuntos} Días ❤️`;
+        } else {
+            counterElement.innerText = `¡Faltan pocos días para comenzar! 🌿`;
+        }
     }
 }
 
@@ -73,11 +81,13 @@ function calcularDias() {
 const envelope = document.getElementById('envelope');
 const letterContent = document.getElementById('letter-content');
 
-envelope.addEventListener('click', () => {
-    letterContent.classList.toggle('hidden');
-});
+if (envelope && letterContent) {
+    envelope.addEventListener('click', () => {
+        letterContent.classList.toggle('hidden');
+    });
+}
 
-// --- SISTEMA DE MASCOTA VIRTUAL (3 ESTADOS / INICIO NORMAL AL 50%) ---
+// --- SISTEMA PERSISTENTE DE LA MASCOTA VIRTUAL ---
 let petState = {
     food: 50,
     love: 50,
@@ -90,16 +100,20 @@ function cargarYSincronizarMascota() {
     if (saved) {
         petState = JSON.parse(saved);
         
-        // Desgaste progresivo por tiempo transcurrido desde la última entrada
+        // Calcular tiempo transcurrido desde la última entrada o interacción
         const now = Date.now();
         const hoursPassed = (now - petState.lastCareTime) / (1000 * 60 * 60);
 
-        if (hoursPassed > 0.5) {
-            const loss = Math.floor(hoursPassed * 5); // Bajan 5% por cada hora
+        if (hoursPassed > 0) {
+            const loss = Math.floor(hoursPassed * 5); // Resta 5% de cada barra por cada hora
             petState.food = Math.max(0, petState.food - loss);
             petState.love = Math.max(0, petState.love - loss);
             petState.clean = Math.max(0, petState.clean - loss);
+            petState.lastCareTime = now; // Sincroniza la hora tras aplicar la reducción
         }
+    } else {
+        // Primera inicialización si nunca se guardó
+        petState.lastCareTime = Date.now();
     }
     actualizarVistaMascota();
 }
@@ -108,7 +122,6 @@ function actualizarVistaMascota() {
     const avatarImg = document.getElementById('pet-avatar-img');
     const msg = document.getElementById('pet-status-msg');
 
-    // Actualizar barras en pantalla
     const foodBar = document.getElementById('food-bar');
     const loveBar = document.getElementById('love-bar');
     const cleanBar = document.getElementById('clean-bar');
@@ -117,26 +130,20 @@ function actualizarVistaMascota() {
     if (loveBar) loveBar.style.width = petState.love + '%';
     if (cleanBar) cleanBar.style.width = petState.clean + '%';
 
-    // Promedio de las 3 estadísticas
     const promedio = (petState.food + petState.love + petState.clean) / 3;
 
-    // 1. ESTADO FELIZ (Promedio >= 65%)
     if (promedio >= 65) {
-        if (avatarImg) avatarImg.src = "images (5).jpg";
+        if (avatarImg) avatarImg.src = "stitch-feliz.jpg";
         if (msg) msg.innerText = "¡Stitch está súper feliz y lleno de energía contigo! 🥰💙";
-    } 
-    // 2. ESTADO NORMAL (Promedio entre 35% y 64%)
-    else if (promedio >= 35) {
-        if (avatarImg) avatarImg.src = "stitchnormal.jpg";
+    } else if (promedio >= 35) {
+        if (avatarImg) avatarImg.src = "stitch-normal.jpg";
         if (msg) msg.innerText = "Stitch está tranquilo, pero necesita más mimos y comida... 🍗";
-    } 
-    // 3. ESTADO TRISTE (Promedio < 35%)
-    else {
-        if (avatarImg) avatarImg.src = "stitchtriste.jpg";
+    } else {
+        if (avatarImg) avatarImg.src = "stitch-triste.jpg";
         if (msg) msg.innerText = "¡Stitch está muy triste y débil! Cuidalo antes de que baje más... 😢";
     }
 
-    // Guardar en el almacenamiento del navegador
+    // Persistencia continua en almacenamiento local
     localStorage.setItem('stitch_pet_v3', JSON.stringify(petState));
 }
 
@@ -158,6 +165,13 @@ if (feedBtn) feedBtn.addEventListener('click', () => darCuidado('food'));
 if (playBtn) playBtn.addEventListener('click', () => darCuidado('love'));
 if (cleanBtn) cleanBtn.addEventListener('click', () => darCuidado('clean'));
 
+// Comprobación continua cada minuto para desgastar si la pestaña queda abierta
+setInterval(() => {
+    if (mainContent && !mainContent.classList.contains('hidden')) {
+        cargarYSincronizarMascota();
+    }
+}, 60000);
+
 // --- SECCIÓN NUESTROS RECUERDOS (LOCALSTORAGE) ---
 const memoryForm = document.getElementById('memory-form');
 const memoriesGrid = document.getElementById('memories-grid');
@@ -170,7 +184,7 @@ if (memoryForm) {
         const titleInput = document.getElementById('memory-title').value;
         const descInput = document.getElementById('memory-desc').value;
 
-        if (fileInput.files && fileInput.files[0]) {
+        if (fileInput && fileInput.files && fileInput.files[0]) {
             const reader = new FileReader();
 
             reader.onload = function (event) {
