@@ -122,10 +122,10 @@ body {
     transform: translateY(0);
 }
 
-/* --- NAVEGACIÓN EN 5 BOTONES (ADAPTADO A CELULAR) --- */
+/* --- NAVEGACIÓN EN GRID --- */
 .nav-menu {
     display: grid;
-    grid-template-columns: repeat(5, 1fr); /* 5 columnas distribuidas */
+    grid-template-columns: repeat(auto-fit, minmax(70px, 1fr));
     gap: 4px;
     margin-bottom: 12px;
 }
@@ -137,21 +137,26 @@ body {
     padding: 6px 2px;
     border-radius: 12px;
     font-weight: 600;
-    font-size: 0.72rem;
+    font-size: 0.7rem;
     cursor: pointer;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 3px;
+    gap: 2px;
     transition: all 0.2s ease;
 }
 
 .nav-btn-img {
-    width: 38px;
-    height: 38px;
+    width: 32px;
+    height: 32px;
     object-fit: contain;
     transition: transform 0.2s ease;
+}
+
+.nav-emoji {
+    font-size: 1.5rem;
+    line-height: 32px;
 }
 
 .nav-btn:active, .nav-btn.active {
@@ -291,9 +296,72 @@ body {
 
 /* ÁLBUM DE FOTOS */
 .photo-grid { display: grid; grid-template-columns: 1fr; gap: 12px; margin-top: 10px; }
-.photo-item { background: #fff; padding: 8px; border-radius: 12px; border: 1px solid #d8f3dc; }
+.photo-item { background: #fff; padding: 8px; border-radius: 12px; border: 1px solid #d8f3dc; text-align: center; }
 .photo-item img { width: 100%; height: 220px; object-fit: cover; border-radius: 8px; }
 .photo-item p { margin-top: 6px; font-size: 0.85rem; color: #1b4332; font-weight: 500; }
+.photo-item small { font-size: 0.75rem; color: #52b788; display: block; margin-top: 2px; }
+
+/* ESTILOS MASCOTA Y BARRAS DE ESTADO */
+.pet-display { margin: 15px 0; text-align: center; }
+
+.pet-avatar-img {
+    width: 140px;
+    height: 140px;
+    object-fit: contain;
+    border-radius: 20px;
+    background: #e8f5e9;
+    padding: 8px;
+    border: 3px solid #74c69d;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    transition: all 0.3s ease;
+}
+
+.pet-status-msg { font-size: 0.9rem; font-weight: bold; color: #1b4332; margin-top: 10px; }
+
+.pet-stats {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin: 15px 0;
+    text-align: left;
+}
+
+.stat-group {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 0.85rem;
+    font-weight: bold;
+    color: #1b4332;
+}
+
+.stat-bar-bg {
+    width: 65%;
+    background: #e8f5e9;
+    height: 14px;
+    border-radius: 10px;
+    overflow: hidden;
+    border: 1px solid #b7e4c7;
+}
+
+.stat-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #52b788, #2d6a4f);
+    transition: width 0.3s ease;
+}
+
+.pet-actions { display: flex; gap: 8px; justify-content: center; }
+.pet-btn { background: #40916c; color: white; border: none; padding: 8px 12px; border-radius: 10px; font-weight: bold; font-size: 0.78rem; cursor: pointer; flex: 1; }
+.pet-btn:active { background: #1b4332; transform: scale(0.95); }
+
+/* RECUERDOS */
+.memory-form { display: flex; flex-direction: column; gap: 10px; margin-top: 12px; text-align: left; }
+.form-group label { font-size: 0.8rem; font-weight: bold; color: #1b4332; display: block; margin-bottom: 4px; }
+.memory-form input[type="file"], .memory-form input[type="text"], .memory-form textarea {
+    width: 100%; padding: 8px 10px; border-radius: 8px; border: 1px solid #b7e4c7; font-size: 0.82rem;
+}
+.save-memory-btn { background: #52b788; color: white; border: none; padding: 10px; border-radius: 10px; font-weight: bold; cursor: pointer; }
+.divider { border: 0; height: 1px; background: #b7e4c7; margin: 18px 0 10px 0; }
 
 /* CARTA */
 .envelope { background: #d8f3dc; border: 2px dashed #52b788; border-radius: 12px; padding: 15px; cursor: pointer; margin-top: 10px; }

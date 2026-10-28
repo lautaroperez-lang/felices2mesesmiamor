@@ -41,7 +41,7 @@
                 <p>Gracias por hacerme el más afortunado y feliz del mundo🥰 </p>
             </header>
 
-            <!-- Menú de 5 Botones con Imágenes de Stitch -->
+            <!-- Menú de 7 Botones Adaptado -->
             <nav class="nav-menu">
                 <button class="nav-btn active" data-tab="tab-tiempo">
                     <img src="tiempo.png.JPG" alt="Tiempo" class="nav-btn-img">
@@ -58,6 +58,14 @@
                 <button class="nav-btn" data-tab="tab-fotos">
                     <img src="fotos.png.JPG" alt="Fotos" class="nav-btn-img">
                     <span>Álbum</span>
+                </button>
+                <button class="nav-btn" data-tab="tab-mascota">
+                    <span class="nav-emoji">🐾</span>
+                    <span>Mascota</span>
+                </button>
+                <button class="nav-btn" data-tab="tab-recuerdos">
+                    <span class="nav-emoji">✨</span>
+                    <span>Recuerdos</span>
                 </button>
                 <button class="nav-btn" data-tab="tab-carta">
                     <img src="carta.png.JPG" alt="Carta" class="nav-btn-img">
@@ -166,7 +174,7 @@
                 </section>
             </div>
 
-            <!-- Pestaña 4: Álbum de Fotos -->
+            <!-- Pestaña 4: Álbum de Fotos Principal -->
             <div id="tab-fotos" class="tab-content hidden-tab">
                 <section class="card album-card">
                     <h2>📸 Nuestro Álbum de Momentos</h2>
@@ -180,14 +188,81 @@
                             <p>Nuestra foto favorita</p>
                         </div>
                         <div class="photo-item">
-                            <img src="c9ffec19-6836-45dc-980b-92253234967f.jpg">
+                            <img src="c9ffec19-6836-45dc-980b-92253234967f.jpg" alt="Foto 3">
                             <p>Nuestra última foto</p>
                         </div>
                     </div>
                 </section>
             </div>
 
-            <!-- Pestaña 5: Carta Interactiva -->
+            <!-- PESTAÑA 5: Pestaña de la Mascota (Inicia en Estado Normal al 50%) -->
+            <div id="tab-mascota" class="tab-content hidden-tab">
+                <section class="card pet-card">
+                    <h2>🐾 Nuestra Mascota: Stitch 💙</h2>
+                    <p class="subtitle">¡Cuidemos juntos a nuestro pequeño compañero!</p>
+                    
+                    <!-- IMAGEN Y MENSAJE INICIAL EN ESTADO NORMAL -->
+                    <div class="pet-display">
+                        <img id="pet-avatar-img" src="stitchnormal.jpg" alt="Stitch Mascota" class="pet-avatar-img">
+                        <div id="pet-status-msg" class="pet-status-msg">Stitch está tranquilo, pero necesita más mimos y comida... 🍗</div>
+                    </div>
+                    
+                    <!-- BARRAS INICIALES AL 50% -->
+                    <div class="pet-stats">
+                        <div class="stat-group">
+                            <span>🍗 Comida:</span>
+                            <div class="stat-bar-bg">
+                                <div id="food-bar" class="stat-bar-fill" style="width: 50%;"></div>
+                            </div>
+                        </div>
+                        <div class="stat-group">
+                            <span>❤️ Amor:</span>
+                            <div class="stat-bar-bg">
+                                <div id="love-bar" class="stat-bar-fill" style="width: 50%;"></div>
+                            </div>
+                        </div>
+                        <div class="stat-group">
+                            <span>🧼 Aseo:</span>
+                            <div class="stat-bar-bg">
+                                <div id="clean-bar" class="stat-bar-fill" style="width: 50%;"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- BOTONES DE INTERACCIÓN -->
+                    <div id="pet-actions" class="pet-actions">
+                        <button id="feed-btn" class="pet-btn">🍖 Alimentar</button>
+                        <button id="play-btn" class="pet-btn">🎾 Mimar</button>
+                        <button id="clean-btn" class="pet-btn">🧼 Bañar</button>
+                    </div>
+                </section>
+            </div>
+
+            <!-- PESTAÑA 6: Nuestros Recuerdos -->
+            <div id="tab-recuerdos" class="tab-content hidden-tab">
+                <section class="card memories-card">
+                    <h2>✨ Nuestros Recuerdos Especiales</h2>
+                    <p class="subtitle">Agregá fotos y momentos inolvidables para guardarlos aquí:</p>
+                    <form id="memory-form" class="memory-form">
+                        <div class="form-group">
+                            <label for="memory-image">Seleccionar foto desde el celular 📷</label>
+                            <input type="file" id="memory-image" accept="image/*" required>
+                        </div>
+                        <div class="form-group">
+                            <input type="text" id="memory-title" placeholder="Título o momento especial..." required>
+                        </div>
+                        <div class="form-group">
+                            <textarea id="memory-desc" placeholder="Escribí una pequeña descripción o historia..." rows="2" required></textarea>
+                        </div>
+                        <button type="submit" class="save-memory-btn">💾 Guardar Recuerdo</button>
+                    </form>
+                    <hr class="divider">
+                    <h3>Galeria de momentos guardados 👇</h3>
+                    <div id="memories-grid" class="photo-grid"></div>
+                </section>
+            </div>
+
+            <!-- Pestaña 7: Carta Interactiva -->
             <div id="tab-carta" class="tab-content hidden-tab">
                 <section class="card letter-section">
                     <h2>💌 Una carta especial para mi Valett 💚 </h2>
@@ -202,9 +277,8 @@
                                 <br><br>
                                 Mi chiquitita, que decirte, te hice esto con mucha intriga, intriga de saber si te iba a gustar, si valía la pena trabajar en esto, no soy un gran programador, pero me esforcé muchísimo para que quedara lindo.
 Esto es un recuerdo, un resumen de nuestra historia, creo que no se podría haber dado todo de una mejor manera, amo ser tu novio, amo que seas mi novia, alegras todos mis días, sabes siempre que decirme, como apoyarme, como acompañarme, sos lo mas lindo que me pudo haber pasado, la sensación de estar enamorado de vos no la cambiaria por nada en este mundo, teniéndote a vos siento que tengo todo, sos mi mundo entero, la razón de mi felicidad, desde que estas a mi lado todo es mas fácil.
-creo que podría escribir un libro entero expresando cuanto te amo, y todo lo que me haces sentir. 
+creo que podría escribir un libro entero expresando cuanto te amo, y todo lo que me me haces sentir. 
 Sos mi primer amor, con vos estoy descubriendo lo que es, creo que nunca imagine poder decir que voy a cumplir dos meses de novios con la tan famosa valen luna, te amo, gracias por ser mi felicidad, gracias por hacerme sentir tan lleno, gracias por ser mi novia, te pido perdón por fallar, por hacerte sentir que no te entiendo, por a veces tener actitudes inmaduras, con vos estoy aprendiendo a amar, ser un buen novio, y es mi objetivo día a día, te amo desde el amor mas puro y sincero que pueda caber en mi corazón.💚💙❤️
-
                                 <br><br>
                                 De: tu Lauti Perez💚💙
                             </p>
@@ -215,7 +289,6 @@ Sos mi primer amor, con vos estoy descubriendo lo que es, creo que nunca imagine
 
         </div>
     </div>
-
     <script src="script.js"></script>
 </body>
 </html>
