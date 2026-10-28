@@ -13,6 +13,7 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 const petDocRef = db.collection('mascota').doc('stitch');
+const recuerdosCollectionRef = db.collection('recuerdos');
 
 // Identificación del usuario
 let usuarioActual = localStorage.getItem('nombre_cuidador');
@@ -56,7 +57,7 @@ if (enterBtn) {
         mainContent.classList.remove('hidden');
         calcularDias();
         iniciarSincronizacionNube();
-        renderizarRecuerdos();
+        escucharRecuerdosNube();
     });
 }
 
@@ -194,9 +195,40 @@ if (feedBtn) feedBtn.addEventListener('click', () => darCuidado('food'));
 if (playBtn) playBtn.addEventListener('click', () => darCuidado('love'));
 if (cleanBtn) cleanBtn.addEventListener('click', () => darCuidado('clean'));
 
-// --- SECCIÓN NUESTROS RECUERDOS (CON COMPRESIÓN Y ELIMINACIÓN) ---
+// --- SECCIÓN NUESTROS RECUERDOS (FIRESTORE EN TIEMPO REAL) ---
 const memoryForm = document.getElementById('memory-form');
 const memoriesGrid = document.getElementById('memories-grid');
+
+function escucharRecuerdosNube() {
+    if (!memoriesGrid) return;
+
+    recuerdosCollectionRef.orderBy('timestamp', 'desc').onSnapshot(snapshot => {
+        memoriesGrid.innerHTML = '';
+
+        if (snapshot.empty) {
+            memoriesGrid.innerHTML = '<p class="subtitle">Aún no hay recuerdos guardados en la nube. ¡Suban el primero!</p>';
+            return;
+        }
+
+        snapshot.forEach(doc => {
+            const recuerdo = doc.data();
+            const idDoc = doc.id;
+
+            const card = document.createElement('div');
+            card.className = 'photo-item memory-card-item';
+            card.innerHTML = `
+                <img src="${recuerdo.image}" alt="${recuerdo.title}">
+                <p><strong>${recuerdo.title}</strong></p>
+                <p>${recuerdo.desc}</p>
+                <small>Subido por ${recuerdo.autor || 'Alguien especial'} el ${recuerdo.date}</small>
+                <button class="delete-memory-btn" onclick="eliminarRecuerdoNube('${idDoc}')">🗑️ Eliminar</button>
+            `;
+            memoriesGrid.appendChild(card);
+        });
+    }, err => {
+        console.error("Error al obtener recuerdos:", err);
+    });
+}
 
 if (memoryForm) {
     memoryForm.addEventListener('submit', (e) => {
@@ -215,9 +247,8 @@ if (memoryForm) {
                 img.src = event.target.result;
 
                 img.onload = function () {
-                    // Redimensionar para evitar superar los 5MB de localStorage
                     const canvas = document.createElement('canvas');
-                    const MAX_WIDTH = 600;
+                    const MAX_WIDTH = 500;
                     const scaleFactor = MAX_WIDTH / img.width;
 
                     if (img.width > MAX_WIDTH) {
@@ -231,19 +262,23 @@ if (memoryForm) {
                     const ctx = canvas.getContext('2d');
                     ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
 
-                    // Convertir a JPEG comprimido
-                    const compressedBase64 = canvas.toDataURL('image/jpeg', 0.7);
+                    const compressedBase64 = canvas.toDataURL('image/jpeg', 0.6);
 
                     const newMemory = {
                         image: compressedBase64,
                         title: titleInput,
                         desc: descInput,
-                        date: new Date().toLocaleDateString('es-AR')
+                        autor: usuarioActual,
+                        date: new Date().toLocaleDateString('es-AR'),
+                        timestamp: Date.now()
                     };
 
-                    guardarRecuerdo(newMemory);
-                    memoryForm.reset();
-                    renderizarRecuerdos();
+                    recuerdosCollectionRef.add(newMemory).then(() => {
+                        memoryForm.reset();
+                    }).catch(err => {
+                        console.error("Error al guardar en Firebase:", err);
+                        alert("Error al subir. Intenta con una imagen más pequeña.");
+                    });
                 };
             };
 
@@ -252,45 +287,10 @@ if (memoryForm) {
     });
 }
 
-function guardarRecuerdo(recuerdo) {
-    try {
-        const recuerdos = JSON.parse(localStorage.getItem('nuestros_recuerdos') || '[]');
-        recuerdos.unshift(recuerdo);
-        localStorage.setItem('nuestros_recuerdos', JSON.stringify(recuerdos));
-    } catch (error) {
-        alert("La memoria del navegador está llena. Borra algún recuerdo anterior antes de subir uno nuevo.");
-        console.error("Error en localStorage:", error);
+function eliminarRecuerdoNube(idDoc) {
+    if (confirm("¿Seguro que quieres borrar este recuerdo para los dos?")) {
+        recuerdosCollectionRef.doc(idDoc).delete().catch(err => {
+            console.error("Error al eliminar de Firebase:", err);
+        });
     }
-}
-
-function eliminarRecuerdo(index) {
-    let recuerdos = JSON.parse(localStorage.getItem('nuestros_recuerdos') || '[]');
-    recuerdos.splice(index, 1);
-    localStorage.setItem('nuestros_recuerdos', JSON.stringify(recuerdos));
-    renderizarRecuerdos();
-}
-
-function renderizarRecuerdos() {
-    if (!memoriesGrid) return;
-
-    const recuerdos = JSON.parse(localStorage.getItem('nuestros_recuerdos') || '[]');
-    memoriesGrid.innerHTML = '';
-
-    if (recuerdos.length === 0) {
-        memoriesGrid.innerHTML = '<p class="subtitle">Aún no hay recuerdos agregados. ¡Sé el primero en subir uno!</p>';
-        return;
-    }
-
-    recuerdos.forEach((recuerdo, index) => {
-        const card = document.createElement('div');
-        card.className = 'photo-item memory-card-item';
-        card.innerHTML = `
-            <img src="${recuerdo.image}" alt="${recuerdo.title}">
-            <p><strong>${recuerdo.title}</strong></p>
-            <p>${recuerdo.desc}</p>
-            <small>Agregado el ${recuerdo.date}</small>
-            <button class="delete-memory-btn" onclick="eliminarRecuerdo(${index})">🗑️ Eliminar</button>
-        `;
-        memoriesGrid.appendChild(card);
-    });
 }
